@@ -66,17 +66,6 @@ GROUP BY DATE(timestamp);
 
 ### End-to-End System Flow
 
-```mermaid
-flowchart TD
-    Frontend[User Frontend] -->|Input customer features| API[POST predict API Endpoint]
-    API --> Model[Load Saved Model - Joblib]
-    Model --> Predict[Make Prediction and Compute Probability]
-    Predict --> Response[Return JSON Response to Frontend]
-    Predict --> DB[Store in SQLite Database]
-    DB --> Predictions[Predictions Table]
-    DB --> Customers[Customers Table]
-```
-
 **Explanation:**
 
 - **Frontend → API:** User inputs customer data via the frontend and sends it as a POST request.  
