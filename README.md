@@ -72,9 +72,7 @@ flowchart TD
     B --> C[Load Saved Model (Joblib)]
     C --> D[Make Prediction & Compute Probability]
     D --> E[Return JSON Response to Frontend]
-    D --> F[Store in SQLite Database]
-    F --> G[Predictions Table]
-    F --> H[Customers Table]
+    D --> F[Store in SQLite Database: Customers & Predictions Tables]
 ```
 
 **Explanation:**
