@@ -66,6 +66,7 @@ GROUP BY DATE(timestamp);
 
 ### End-to-End System Flow
 
+```mermaid
 flowchart TD
     A[User / Frontend] -->|Input customer features| B[POST /predict API Endpoint]
     B --> C[Load Saved Model (Joblib)]
@@ -74,6 +75,7 @@ flowchart TD
     D --> F[Store in SQLite Database]
     F --> G[Predictions Table]
     F --> H[Customers Table]
+```
 
 **Explanation:**
 
