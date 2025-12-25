@@ -1,4 +1,3 @@
-
 # Customer Churn Predictor Using Machine Learning
 
 ## Problem Statement 
@@ -9,61 +8,88 @@ In this project, I build a machine learning–based customer churn prediction sy
 
 The goal of this project is not only to develop accurate predictive models, but also to translate predictions into actionable business insights that can support proactive retention strategies and performance monitoring.
 
-## API & SQL Desgin
+---
 
-This project implements uses an API to connect the machine learning model to the web application.
+## API & SQL Design
 
 ### API
-- I will be using FASTAPI to implement this process.
-- The API connects the customer churn predicting model to the web application.
-- It has a POST request that sends feature value data to the model.
-- The input is a JSON that holds feature values for the model
-    * Example:
-    `
-        {
-            "TotalCharges": 29.85,
-            "Month-to-Month (Contract)": 1,
-            "tenure": 1,
-            "SeniorCitizen": 0,
-            "Two year (Contract)": 0 
-        }
-    `
-- The output is a JSON that holds the prediction and the churn label.
-    * Example:
-    `
-        {
-            churn_probability: 0.82,
-            churn_prediction: "High Risk"
-        }
-    `
 
-### Saving the Model
-I will save the best trained model using **Joblib**. Joblib is an open source python library used to optimize computational tasks through parallel computing, disk-caching, and efficient data storage. For this project I will use it to save the best churn predicting model and use it for the application.
+- I will be using **FastAPI** to implement this process.
+- The API connects the customer churn predicting model to the web application.
+- It has a **POST** request that sends feature value data to the model.
+- The input is a JSON that holds feature values for the model.  
+  Example:
+```json
+{
+    "TotalCharges": 29.85,
+    "Month-to-Month (Contract)": 1,
+    "tenure": 1,
+    "SeniorCitizen": 0,
+    "Two year (Contract)": 0 
+}
+```
+- The output is a JSON that holds the prediction and the churn label.  
+  Example:
+```json
+{
+    "churn_probability": 0.82,
+    "churn_prediction": "High Risk"
+}
+```
+
+### Model Packaging
+
+- The best trained model will be saved using **Joblib**, which allows fast loading for inference without retraining.
+- Ensures that preprocessing steps are consistent between training and inference.
+- Deliverable: The model is saved once and loaded for predictions.
 
 ### SQL Design
-- I will be using SQLite, since it is lightweight and does not require a server.
-- There will be two tables for the database. One called customers and another called predictions.
-    * **customers**: Each document in the collection of customers will contain the customer ID and all of the feature values used for the model prediction. 
-    * **predictions**: Each document in this collection will contain the customer ID, the prediction of whether they churned or not, the churn probability, and the timestamp of the predicition.
-- Some query examples:
-    * High-Risk Customers
-    `
-        SELECT customer_id, churn_probability
-        FROM predictions
-        WHERE churn_prediction = 1
-        ORDER BY churn_probability DESC;
-    `
-    * 
-    `
-        SELECT DATE(timestamp), COUNT(*)
-        FROM predictions
-        GROUP BY DATE(timestamp);
-    `
+
+- **Database Choice:** SQLite (lightweight, no server needed)
+- **Tables:**
+  - `customers`: Stores customer ID and all feature values.
+  - `predictions`: Stores customer ID, churn prediction, probability, and timestamp.
+- **Example SQL Queries:**
+  - High-Risk Customers:
+```sql
+SELECT customer_id, churn_probability
+FROM predictions
+WHERE churn_prediction = 1
+ORDER BY churn_probability DESC;
+```
+  - Daily Prediction Count:
+```sql
+SELECT DATE(timestamp), COUNT(*)
+FROM predictions
+GROUP BY DATE(timestamp);
+```
 
 ### End-to-End System Flow
-- The user provides input for a customer with selected feature values.
-- This is then sent as a POST request to the API to the `/predict` endpoint.
-- The the model that was saved will be load and gives the prediction probailty from the data sent.
-- Then then it sends the output prediction and probability.
 
+```mermaid
+flowchart TD
+    A[User / Frontend] -->|Input customer features| B[POST /predict API Endpoint]
+    B --> C[Load Saved Model (Joblib)]
+    C --> D[Make Prediction & Compute Probability]
+    D --> E[Return JSON Response to Frontend]
+    D --> F[Store in SQLite Database]
+    F --> G[Predictions Table]
+    F --> H[Customers Table]
+```
 
+**Explanation:**
+
+- **A → B:** User inputs customer data via the frontend and sends it as a POST request.  
+- **B → C:** The API loads the saved model (no retraining).  
+- **C → D:** Model predicts churn probability and label.  
+- **D → E:** Prediction JSON is returned to the frontend.  
+- **D → F:** Prediction data is saved to the database.  
+- **F → G/H:** Data is organized into `predictions` and `customers` tables.
+
+---
+
+## Notes
+
+- This README is a living document and will be updated as the project progresses.
+- All ML models, API endpoints, and SQL designs are aligned to ensure consistent reproducibility and ease of deployment.
+- This document serves as both technical documentation and portfolio reference for internships or job applications.
