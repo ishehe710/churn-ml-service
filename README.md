@@ -41,7 +41,7 @@ The goal of this project is not only to develop accurate predictive models, but 
 
 - The best trained model will be saved using **Joblib**, which allows fast loading for inference without retraining.
 - Ensures that preprocessing steps are consistent between training and inference.
-- Deliverable: The model is saved once and loaded for predictions.
+- The model is saved once and loaded for predictions.
 
 ### SQL Design
 
@@ -68,23 +68,23 @@ GROUP BY DATE(timestamp);
 
 ```mermaid
 flowchart TD
-    A[User Frontend] -->|Input customer features| B[POST predict API Endpoint]
-    B --> C[Load Saved Model - Joblib]
-    C --> D[Make Prediction and Compute Probability]
-    D --> E[Return JSON Response to Frontend]
-    D --> F[Store in SQLite Database]
-    F --> G[Predictions Table]
-    F --> H[Customers Table]
+    Frontend[User Frontend] -->|Input customer features| API[POST predict API Endpoint]
+    API --> Model[Load Saved Model - Joblib]
+    Model --> Predict[Make Prediction and Compute Probability]
+    Predict --> Response[Return JSON Response to Frontend]
+    Predict --> DB[Store in SQLite Database]
+    DB --> Predictions[Predictions Table]
+    DB --> Customers[Customers Table]
 ```
 
 **Explanation:**
 
-- **A → B:** User inputs customer data via the frontend and sends it as a POST request.  
-- **B → C:** The API loads the saved model (no retraining).  
-- **C → D:** Model predicts churn probability and label.  
-- **D → E:** Prediction JSON is returned to the frontend.  
-- **D → F:** Prediction data is saved to the database.  
-- **F → G/H:** Data is organized into `predictions` and `customers` tables.
+- **Frontend → API:** User inputs customer data via the frontend and sends it as a POST request.  
+- **API → Model:** The API loads the saved model (no retraining).  
+- **Model → Predict:** Model predicts churn probability and label.  
+- **Predict → Response:** Prediction JSON is returned to the frontend.  
+- **Predict → DB:** Prediction data is saved to the database.  
+- **DB → Predictions / Customers:** Data is organized into `predictions` and `customers` tables.
 
 ---
 
@@ -92,4 +92,3 @@ flowchart TD
 
 - This README is a living document and will be updated as the project progresses.
 - All ML models, API endpoints, and SQL designs are aligned to ensure consistent reproducibility and ease of deployment.
-- This document serves as both technical documentation and portfolio reference for internships or job applications.
