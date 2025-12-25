@@ -68,11 +68,13 @@ GROUP BY DATE(timestamp);
 
 ```mermaid
 flowchart TD
-    A[User / Frontend] -->|Input customer features| B[POST /predict API Endpoint]
-    B --> C[Load Saved Model (Joblib)]
-    C --> D[Make Prediction & Compute Probability]
+    A[User Frontend] -->|Input customer features| B[POST predict API Endpoint]
+    B --> C[Load Saved Model - Joblib]
+    C --> D[Make Prediction and Compute Probability]
     D --> E[Return JSON Response to Frontend]
-    D --> F[Store in SQLite Database: Customers & Predictions Tables]
+    D --> F[Store in SQLite Database]
+    F --> G[Predictions Table]
+    F --> H[Customers Table]
 ```
 
 **Explanation:**
