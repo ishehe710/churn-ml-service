@@ -1,12 +1,12 @@
 # Customer Churn Predictor Using Machine Learning
 
-## Problem Statement 
+## Problem Statement
 
-Customer churn refers to customers discontinuing their use of a company’s products or services. It is a critical business metric, as high churn rates directly impact revenue, growth, and long-term sustainability. This issue is especially important in subscription-based industries, where retaining existing customers is often more cost-effective than acquiring new ones.
+Customer churn occurs when customers discontinue their use of a company’s products or services. High churn rates directly impact revenue, growth, and long-term sustainability, making churn a critical business metric. Retaining existing customers is often more cost-effective than acquiring new ones, particularly in subscription-based industries.
 
-In this project, I build a machine learning–based customer churn prediction system to help businesses identify customers who are at high risk of churning. The task is formulated as a binary classification problem, where the target variable indicates whether a customer has churned.
+This project implements a machine learning–based system to predict customer churn, helping businesses identify high-risk customers. The task is framed as a binary classification problem, where the target variable indicates whether a customer has churned.
 
-The goal of this project is not only to develop accurate predictive models, but also to translate predictions into actionable business insights that can support proactive retention strategies and performance monitoring.
+The goal is not only to develop accurate predictive models but also to translate predictions into actionable insights to support proactive retention strategies and performance monitoring.
 
 ---
 
@@ -14,10 +14,10 @@ The goal of this project is not only to develop accurate predictive models, but 
 
 ### API
 
-- I will be using **FastAPI** to implement this process.
-- The API connects the customer churn predicting model to the web application.
-- It has a **POST** request that sends feature value data to the model.
-- The input is a JSON that holds feature values for the model.  
+- Implemented using **FastAPI**.
+- Connects the customer churn prediction model to a web application.
+- **POST** request endpoint: `/predict`  
+- **Input:** JSON containing model-ready feature values.  
   Example:
 ```json
 {
@@ -25,10 +25,10 @@ The goal of this project is not only to develop accurate predictive models, but 
     "Month-to-Month (Contract)": 1,
     "tenure": 1,
     "SeniorCitizen": 0,
-    "Two year (Contract)": 0 
+    "Two year (Contract)": 0
 }
 ```
-- The output is a JSON that holds the prediction and the churn label.  
+- **Output:** JSON containing predicted churn probability and label.  
   Example:
 ```json
 {
@@ -39,13 +39,13 @@ The goal of this project is not only to develop accurate predictive models, but 
 
 ### Model Packaging
 
-- The best trained model will be saved using **Joblib**, which allows fast loading for inference without retraining.
-- Ensures that preprocessing steps are consistent between training and inference.
-- The model is saved once and loaded for predictions.
+- The best trained model is saved using **Joblib** for fast loading during inference.
+- Ensures preprocessing consistency between training and inference.
+- Model is saved once and loaded for predictions.
 
 ### SQL Design
 
-- **Database Choice:** SQLite (lightweight, no server needed)
+- **Database Choice:** SQLite (lightweight, serverless)
 - **Tables:**
   - `customers`: Stores customer ID and all feature values.
   - `predictions`: Stores customer ID, churn prediction, probability, and timestamp.
@@ -66,18 +66,52 @@ GROUP BY DATE(timestamp);
 
 ### End-to-End System Flow
 
-**Explanation:**
-
-- **Frontend → API:** User inputs customer data via the frontend and sends it as a POST request.  
-- **API → Model:** The API loads the saved model (no retraining).  
+- **Frontend → API:** User submits customer data via POST request.  
+- **API → Model:** API loads the saved model (no retraining).  
 - **Model → Predict:** Model predicts churn probability and label.  
-- **Predict → Response:** Prediction JSON is returned to the frontend.  
-- **Predict → DB:** Prediction data is saved to the database.  
+- **Predict → Response:** JSON response is returned to frontend.  
+- **Predict → DB:** Prediction data is saved in the database.  
 - **DB → Predictions / Customers:** Data is organized into `predictions` and `customers` tables.
+
+### API Usage
+
+1. Clone the repository:
+   ```bash
+   git clone <repo_url>
+   cd churn-ml-service
+   ```
+2. Install dependencies:
+   ```bash
+   pip install -r requirements.txt
+   ```
+3. Run the API:
+   ```bash
+   cd api
+   fastapi dev main.py
+   ```
+4. Example Request:
+```json
+{
+    "TotalCharges": 29.85,
+    "Month-to-Month (Contract)": 1,
+    "tenure": 1,
+    "SeniorCitizen": 0,
+    "Two year (Contract)": 0,
+    ...
+}
+```
+5. Example Response:
+```json
+{
+    "churn_probability": 0.82,
+    "churn_prediction": "High Risk"
+}
+```
 
 ---
 
 ## Notes
 
 - This README is a living document and will be updated as the project progresses.
-- All ML models, API endpoints, and SQL designs are aligned to ensure consistent reproducibility and ease of deployment.
+- All ML models, API endpoints, and SQL designs are aligned to ensure reproducibility and ease of deployment.
+
