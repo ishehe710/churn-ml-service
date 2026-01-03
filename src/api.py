@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 import joblib
 import pandas as pd
-
+from features import FEATURES
 # load model
 model = joblib.load('../models/churn_model.joblib')
 
@@ -15,7 +15,8 @@ def predict(data: dict):
     
     # predict the user input
     sample = pd.DataFrame([data])
+    sample = sample[FEATURES]
     pred = model.predict(sample)
     pred_proba = model.predict_proba(sample)[0][1]
     
-    return {'churn_prediction': str(pred[0]), 'churn_probability': str(pred_proba)}
+    return {'churn': str(pred[0]), 'probability': str(pred_proba)}
