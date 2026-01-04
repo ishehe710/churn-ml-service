@@ -1,12 +1,12 @@
 import pandas as pd
 from sklearn.linear_model import LogisticRegression
 from sklearn.model_selection import train_test_split
-from preprocessing import process_data
+from src.ml.preprocessing import process_data
 import joblib
 
 
 # load data
-df = pd.read_csv('../data/processed/telco_churn_clean.csv')
+df = pd.read_csv('../../data/processed/telco_churn_clean.csv')
 
 # appylying preprocessing for model
 df = process_data(df)
