@@ -1,3 +1,18 @@
+"""
+features.py
+
+Owns:
+- Numeric scaling
+- Categorical encoding
+- Feature normalization
+
+Does NOT:
+- Load models
+- Perform predictions
+- Know about FastAPI
+- Have preprocessing logic
+"""
+
 from src.api.schema import ChurnInput
 import pandas as pd
 

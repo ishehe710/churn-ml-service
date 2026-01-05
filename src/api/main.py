@@ -1,12 +1,21 @@
-# other imports
+"""
+main.py
+
+Owns:
+- Routing for the application
+- Performs the predictions
+- Peforms the mapping of ChurnInput into model features
+
+Does NOT:
+- Have functionality of preprocessing data
+- Train the model & save it
+- Load the model
+"""
+
 from fastapi import FastAPI
-import joblib
+from load_model import model
 from src.ml.features import map_churn_input_to_df
 from src.api.schema import ChurnInput
-
-# load model
-model = joblib.load('./src/models/churn_model.joblib')
-print('Model loaded successfully.')
 
 # api stuff
 app = FastAPI()
@@ -16,7 +25,7 @@ def predict(data: ChurnInput):
     
     # predict the user input
     sample = map_churn_input_to_df(data)
-    pred = model.predict(sample)
-    pred_proba = model.predict_proba(sample)[0][1]
+    pred = model.predict(sample)[0]
+    pred_proba = model.predict_proba(sample)[0, 1]
     
-    return {'churn': str(pred[0]), 'probability': str(pred_proba)}
+    return {'churn': bool(pred), 'probability': float(pred_proba)}

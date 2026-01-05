@@ -1,3 +1,17 @@
+"""
+preprocessing.py
+
+Owns:
+- Numeric scaling
+- Categorical encoding
+
+Does NOT:
+- Load models
+- Perform predictions
+- Know about FastAPI
+- Have the mapping function for ChurnInput
+"""
+
 import pandas as pd
 
 # processes the 

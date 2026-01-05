@@ -1,3 +1,15 @@
+"""
+schema.py
+
+Owns:
+- Contract customer input for the model
+
+Does NOT:
+- Load models
+- Perform predictions
+- Know about FastAPI
+"""
+
 from pydantic import BaseModel
 
 """

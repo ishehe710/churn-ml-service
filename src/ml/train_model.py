@@ -1,3 +1,17 @@
+"""
+train_model.py
+
+Owns:
+- Training the churn model
+- Saving the churn model
+
+Does NOT:
+- Load models
+- Perform predictions
+- Know about FastAPI
+- Have one-hot encoding implementation
+"""
+
 import pandas as pd
 from sklearn.linear_model import LogisticRegression
 from sklearn.model_selection import train_test_split
