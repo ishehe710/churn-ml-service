@@ -13,7 +13,19 @@ Does NOT:
 """
 
 import joblib
+from src.api.logging_config import get_logger
+
+model_loader_logger = get_logger(__name__)
 
 # load model
-model = joblib.load('./src/models/churn_model.joblib')
-print('Model loaded successfully.')
+model_loader_logger.info("starting_load")
+model = None
+
+try:
+    model = joblib.load('./src/models/churn_model.joblib')
+except Exception as e:
+    model_loader_logger.error("load_failed", error=str(e))
+    raise
+
+model_loader_logger.info("model_loaded", name=model.custom_name)
+
