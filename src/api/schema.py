@@ -23,7 +23,7 @@ class ChurnInput(BaseModel):
     monthly_charges: float
     total_charges: float
     
-    # one-hot encoding
+    # one-hot encoding (they are boolean values really)
     female: int
     male: int
     no_partner: int

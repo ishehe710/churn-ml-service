@@ -14,7 +14,7 @@ Does NOT:
 
 import pandas as pd
 
-# processes the 
+# processes the cleaned csv file to be used for model input
 def process_data(df):
     categorical_cols = df.select_dtypes(include='object').columns 
     for c in categorical_cols:

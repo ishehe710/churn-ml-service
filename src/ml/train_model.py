@@ -37,5 +37,6 @@ model.custom_name = "logistic_regression_class_weights"
 model.fit(X_train, y_train)
 
 # save trained model
-joblib.dump(model, './src/models/churn_model.joblib')
+MODEL_PATH = "./src/models/churn_model_v1.joblib"
+joblib.dump(model, MODEL_PATH)
 print("The churn model was saved successfully.")

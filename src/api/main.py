@@ -12,13 +12,13 @@ Does NOT:
 - Contain model loading logic (delegated to load_model.py)
 """
 
-
 # imports
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
 from src.ml.load_model import model
 from src.ml.features import map_churn_input_to_df
 from src.api.schema import ChurnInput
 from src.api.logging_config import get_logger
+from src.api.validators import validate_mutual_exclusivity
 import time
 
 # initialize api logger
@@ -33,13 +33,13 @@ def predict(data: ChurnInput):
     # logging that request was received
     api_logger.info("request_received")
     
-    
     try:
         # mapping customer input to model features
+        validate_mutual_exclusivity(data)
         sample = map_churn_input_to_df(data)
     except Exception as e:
         api_logger.warning("invalid_customer_input", error=str(e))
-        raise
+        raise HTTPException(status_code=400, detail="Invalid feature mapping")
     
     api_logger.info(
         "input_mapped_to_features",
@@ -56,13 +56,12 @@ def predict(data: ChurnInput):
         pred_proba = model.predict_proba(sample)[0, 1]
     except Exception as e:
         api_logger.error("prediction_failed", error=str(e))
-        raise
+        raise HTTPException(status_code=500, detail="Model prediction failed")
     
     # calculate latency in milliseconds
     duration_ns = time.perf_counter_ns() - start_ns
     latency_ms = duration_ns / 1_000_000
 
-    
     # logging success of model prediction
     api_logger.info("prediction_completed", latency_ms=round(latency_ms, 4), 
             num_samples=len(sample))
