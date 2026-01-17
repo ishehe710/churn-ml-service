@@ -20,6 +20,8 @@ Every file in the src folder should have their own unique purpose and I describe
 - `load_model.py`: loads the churn model saved from train_model.py to then be used in the api. This file is the single source of truth for how models are loaded in the application. This is in the `src/ml/` folder.
 - `logging_config.py`: holds the configuration of a local logger for the necessary files of the project. Files `main.py` and `load_model.py` use it the logger to ensure the API is running correctly. This file is found in the `src/api` folder.
 - `validators.py`: holds the validation of user customer churn input to have fields that are mutually exclusive to be selected at the same time, else it throws an error. This file is found in the `src/api` folder.
+- `persistence.py`: holds the SQL database intialization as a class called **PredictionStore** and exports it to `sqlite.py`. This file is held in `src/api`.
+- `sqlite.py`: holds the initialization of the SQL database for the churn project which is then exported to the api for usage. This file is in the `src/sql`
 
 ## Expectations of the Application
 - The request field for the POST `/predict` endpoint takes a JSON of 46 feature values denoted by the ChurnInput schema in schema.py.
@@ -88,3 +90,55 @@ The primary benefit of JSON logs is that they are machine-parseable and can be e
 A tradeoff of this approach is reduced human readability when viewing logs directly during local development. While JSON logs are less visually pleasing in a terminal, this cost was accepted in favor of improved observability and future scalability.
 
 Given that this project prioritizes production-oriented design, structured logging was chosen intentionally despite its verbosity.
+
+## SQL Design and Implementation
+I this section I will go over how I designed the SQL database for the churn project, the decisions made and what tradeoffs I considerd.
+
+### Purpose of SQL Datase
+The SQL database is incorporated into the project for persistance reasons. This allows the application to have access to recorded input and output from the churn model inside the API. This persistance for record keeping allows gives the project traceability and reproducibility. First, by recording a request identifier and derived outputs and output we have direct record of information for one request. Then for reproducibility, we can reproduce predictions under the same model version and feature contract to get the same output to show reproducable the results are.
+
+### Why SQLite Over Postgres
+For this churn project I decided to use SQLite for database. I choose this over Postgres for a couple of reasons. First was due to the scale of project. The project is a single user and not super complex, thus having to deal with the setup that comes with Postgres and the other features with it are not worth with for the current stage of the project. However the setup of SQLite is pretty quick and easier maintain. But, in the future renditions of the project it is best to make the switch to Postgres.
+
+### What to Persist and Not
+I will list the things that are persisted and are not persited
+
+Entities
+- Predictions from model
+- Model medata
+- Key for particular churn input
+- Timestamp
+
+Exclusions
+- Raw request payloads (for privacy)
+- User identity (for privacy)
+- Long term analytic data (not focus of project)
+
+### Schema for Persistance
+Here I discussed the conceptual SQL Schema for the project.
+
+There are one tables for the database: `predictions`.
+- SQL schema concept:
+    ```sql
+        predictions
+        -----------
+        id (PK)
+        request_id (UUID)
+        model_version (TEXT)
+        prediction (REAL)
+        churn_label (INTEGER or BOOLEAN)
+        created_at (TIMESTAMP)
+    ```
+
+
+### Priority of Prediction Over Persistence
+There will be a python file called persistence.py in the api folder of the project. Then the database is created in a seperate folder called `src/sql`. This seperates the API and storage of data since there are seperate files for each task. Persistance does not block the end-to-end flow of the application when there are try-except blocks for inserting documents into the database and proper logging for database. Lastly, regardless of the state of the database the service still provides a predicition output.
+
+<!--
+Polishing Day TODOs:
+- Clarify API role as orchestrator (not business logic owner)
+- Explicitly state feature contract immutability
+- Refine reproducibility guarantees and assumptions
+- Tighten logging safety definitions
+- Clarify scope of stored model metadata
+-->

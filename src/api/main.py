@@ -19,6 +19,7 @@ from src.ml.features import map_churn_input_to_df
 from src.api.schema import ChurnInput
 from src.api.logging_config import get_logger
 from src.api.validators import validate_mutual_exclusivity
+from src.sql.sqlite import db
 import time
 
 # initialize api logger
@@ -43,12 +44,14 @@ def predict(data: ChurnInput):
     
     api_logger.info(
         "input_mapped_to_features",
-        num_features=sample.shape[1],
-        feature_names=list(sample.columns)
+        num_features=sample.shape[1]
     )
     
     # capture start time
     start_ns = time.perf_counter_ns()
+    
+    pred = None
+    pred_proba = None
     
     try:
         # predict the user input
@@ -57,6 +60,14 @@ def predict(data: ChurnInput):
     except Exception as e:
         api_logger.error("prediction_failed", error=str(e))
         raise HTTPException(status_code=500, detail="Model prediction failed")
+    
+    # saving request into database
+    try: 
+        db.save_prediction(type(model).__name__, float(pred_proba), int(pred))
+        api_logger.info("prediction_persisted")        
+    except Exception as e:
+        api_logger.error("prediction_persistance_failed")
+        raise HTTPException(status_code=400, detail="Failed to save model into database.")
     
     # calculate latency in milliseconds
     duration_ns = time.perf_counter_ns() - start_ns
