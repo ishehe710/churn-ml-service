@@ -77,4 +77,8 @@ def predict(data: ChurnInput):
     api_logger.info("prediction_completed", latency_ms=round(latency_ms, 4), 
             num_samples=len(sample))
     
-    return {'churn': bool(pred), 'probability': float(pred_proba)}
+    return {
+        'churn_label': bool(pred), 
+        'probability': float(pred_proba),
+        'model_version': str(type(model).__name__)
+        }
