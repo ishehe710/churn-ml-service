@@ -18,10 +18,12 @@ Every file in the src folder should have their own unique purpose and I describe
 - `preprocessing.py`: holds the function that processes the cleaned csv file to then be used for the churn model for trainning. Used only during training, never at inference time. This is in the `src/ml/` folder.
 - `train_model.py`: trains the churn model for the project and saves it to then be loaded later. This is in the `src/ml/` folder.
 - `load_model.py`: loads the churn model saved from train_model.py to then be used in the api. This file is the single source of truth for how models are loaded in the application. This is in the `src/ml/` folder.
-- `logging_config.py`: holds the configuration of a local logger for the necessary files of the project. Files `main.py` and `load_model.py` use it the logger to ensure the API is running correctly. This file is found in the `src/api` folder.
+- `logging_config.py`: holds the configuration of a local logger for the necessary files of the project. Files `main.py` and `load_model.py` use it the logger to ensure the API is running correctly. This file is found in the `src/api/` folder.
 - `validators.py`: holds the validation of user customer churn input to have fields that are mutually exclusive to be selected at the same time, else it throws an error. This file is found in the `src/api` folder.
-- `persistence.py`: holds the SQL database intialization as a class called **PredictionStore** and exports it to `sqlite.py`. This file is held in `src/api`.
-- `sqlite.py`: holds the initialization of the SQL database for the churn project which is then exported to the api for usage. This file is in the `src/sql`
+- `persistence.py`: holds the SQL database intialization as a class called **PredictionStore** and exports it to `sqlite.py`. This file is held in `src/api/`.
+- `sqlite.py`: holds the initialization of the SQL database for the churn project which is then exported to the api for usage. This file is in the `src/sql/`.
+- `app.py`: holds the GUI code for the churn risk predictor project. This file is in the folder `src/gui/`.
+- `api_client.py`: holds the link between the GUI wrapper of the application and the API to call the model.  This file is in the folder `src/gui/`.
 
 ## Expectations of the Application
 - The request field for the POST `/predict` endpoint takes a JSON of 46 feature values denoted by the ChurnInput schema in schema.py.

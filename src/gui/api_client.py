@@ -1,3 +1,21 @@
+"""
+api_client.py
+
+Owns:
+- Communication with the FastAPI backend
+- HTTP request construction (payloads, headers)
+- Sending prediction requests
+- Parsing and returning API responses
+- Handling network-level errors and timeouts
+
+Does NOT:
+- Perform feature preprocessing
+- Implement ML models
+- Store predictions or manage persistence
+- Render any UI components
+- Contain FastAPI server code
+"""
+
 import requests
 
 PREDICT_ENDPOINT = "http://127.0.0.1:8000/predict"

@@ -1,81 +1,175 @@
+"""
+app.py
+
+Owns:
+- GUI wrapper for the churn prediction service
+- User input collection (form fields)
+- Input validation at the UI level
+- Displaying prediction results and confidence
+- Orchestrating calls to the API client
+
+Does NOT:
+- Perform feature engineering
+- Contain ML model logic
+- Talk directly to the database
+- Know how predictions are computed internally
+- Implement FastAPI or backend routing
+"""
+
 import streamlit as st
 import numpy as np
 
 from src.gui.api_client import predict_churn
 
-st.set_page_config(page_title="Churn Prediction", layout="wide")
+# Page config
+st.set_page_config(
+    page_title="Customer Churn Predictor",
+    layout="wide",
+)
 
-st.title("📉 Customer Churn Prediction")
+st.title("📉 Customer Churn Risk Predictor")
 st.write("Enter customer attributes to estimate churn risk.")
 
-with st.form("input_form"):
-
-    # --- Core numeric features ---
-    senior_citizen = st.radio("Senior Citizen", ["Yes", "No"], index=1)
-    tenure = st.number_input("Tenure (months)", min_value=0, max_value=100, value=12)
-    monthly_charges = st.number_input("Monthly Charges", min_value=0.0, max_value=200.0, value=70.0)
-    total_charges = st.number_input("Total Charges", min_value=0.0, max_value=100000.0, value=1000.0)
-
-    # --- Binary one-hot features ---
-    binary_features = [
+# Feature groups (UI only — payload stays flat)
+FEATURE_GROUPS = {
+    "Demographics": [
         "female", "male",
         "no_partner", "yes_partner",
         "no_dependents", "yes_dependents",
+    ],
+    "Phone Services": [
         "no_phone_service", "yes_phone_service",
-        "no_multiple_lines", "no_phone_service_multiple_lines", "yes_multiple_lines",
-        "dsl_internet_service", "fiber_optic_internet_service", "no_internet_service",
-        "no_online_security", "no_internet_service_online_security", "yes_online_security",
-        "no_online_backup", "no_internet_service_online_backup", "yes_online_backup",
-        "no_device_protection", "no_internet_service_device_protection", "yes_device_protection",
-        "no_tech_support", "no_internet_service_tech_support", "yes_tech_support",
-        "no_streaming_tv", "no_internet_service_streaming_tv", "yes_streaming_tv",
-        "no_streaming_movies", "no_internet_service_streaming_movies", "yes_streaming_movies",
-        "month_to_month_contract", "one_year_contract", "two_year_contract",
-        "no_paperless_billing", "yes_paperless_billing",
+        "no_multiple_lines",
+        "no_phone_service_multiple_lines",
+        "yes_multiple_lines",
+    ],
+    "Internet Services": [
+        "dsl_internet_service",
+        "fiber_optic_internet_service",
+        "no_internet_service",
+        "no_online_security",
+        "no_internet_service_online_security",
+        "yes_online_security",
+        "no_online_backup",
+        "no_internet_service_online_backup",
+        "yes_online_backup",
+        "no_device_protection",
+        "no_internet_service_device_protection",
+        "yes_device_protection",
+        "no_tech_support",
+        "no_internet_service_tech_support",
+        "yes_tech_support",
+        "no_streaming_tv",
+        "no_internet_service_streaming_tv",
+        "yes_streaming_tv",
+        "no_streaming_movies",
+        "no_internet_service_streaming_movies",
+        "yes_streaming_movies",
+    ],
+    "Contract & Billing": [
+        "month_to_month_contract",
+        "one_year_contract",
+        "two_year_contract",
+        "no_paperless_billing",
+        "yes_paperless_billing",
+    ],
+    "Payment Method": [
         "bank_transfer_automatic_payment_method",
         "credit_card_automatic_payment_method",
         "electronic_check_payment_method",
         "mailed_check_payment_method",
-    ]
+    ],
+}
+
+# Flatten list (used for payload construction)
+binary_features = [
+    feature
+    for features in FEATURE_GROUPS.values()
+    for feature in features
+]
+
+# Input form
+with st.form("input_form"):
+
+    st.subheader("Core Customer Information")
+
+    senior_citizen = st.radio(
+        "Senior Citizen",
+        ["Yes", "No"],
+        index=1,
+    )
+
+    tenure = st.number_input(
+        "Tenure (months)",
+        min_value=0,
+        max_value=100,
+        value=12,
+    )
+
+    monthly_charges = st.number_input(
+        "Monthly Charges",
+        min_value=0.0,
+        max_value=200.0,
+        value=70.0,
+    )
+
+    total_charges = st.number_input(
+        "Total Charges",
+        min_value=0.0,
+        max_value=100000.0,
+        value=1000.0,
+    )
+
+    st.divider()
 
     inputs = {}
-    cols = st.columns(3)
 
-    for i, feature in enumerate(binary_features):
-        with cols[i % 3]:
-            inputs[feature] = st.radio(
-                feature.replace("_", " ").title(),
-                ["Yes", "No"],
-                index=1,
-                key=f"radio_{feature}",
-            )
+    for section, features in FEATURE_GROUPS.items():
+        st.subheader(section)
+        cols = st.columns(3)
+
+        for i, feature in enumerate(features):
+            with cols[i % 3]:
+                inputs[feature] = st.radio(
+                    label=feature.replace("_", " ").title(),
+                    options=["Yes", "No"],
+                    index=1,
+                    key=f"radio_{feature}",
+                )
 
     submitted = st.form_submit_button("Predict Churn")
 
-    if submitted:
-        try:
-            payload = {f: 1 if inputs[f] == "Yes" else 0 for f in binary_features}
-            payload["senior_citizen"] = 1 if senior_citizen == "Yes" else 0
-            payload["tenure"] = tenure
-            payload["monthly_charges"] = monthly_charges
-            payload["total_charges"] = total_charges
+# Prediction handling
+if submitted:
+    try:
+        payload = {f: 1 if inputs[f] == "Yes" else 0 for f in binary_features}
+        payload["senior_citizen"] = 1 if senior_citizen == "Yes" else 0
+        payload["tenure"] = tenure
+        payload["monthly_charges"] = monthly_charges
+        payload["total_charges"] = total_charges
 
-            response = predict_churn(payload)
+        response = predict_churn(payload)
 
-            probability = response["probability"]
-            label = response["churn_label"]
-            model_version = response["model_version"]
+        probability = response["probability"]
+        churn_label = response["churn_label"]
 
-            st.success("Prediction successful ✅")
+        st.success("Prediction successful ✅")
 
-            st.metric(
-                label="Churn Probability",
-                value=f"{int(np.round(probability * 100))}%",
-            )
+        st.metric(
+            label="Churn Probability",
+            value=f"{int(np.round(probability * 100))}%",
+        )
 
-            st.write(f"**Risk Level:** {'High' if label == 1 else 'Low'}")
-            st.write(f"**Model Version:** {model_version}")
+        risk_level = (
+            "Extreme Risk" if probability >= 0.75
+            else "High Risk" if probability >= 0.5
+            else "Low Risk" if probability >= 0.25
+            else "Not at Risk"
+        )
 
-        except Exception as e:
-            st.error("Prediction failed. Please check the API service.")
-            st.exception(e)
+        st.write(f"**Risk Level:** {risk_level}")
+        st.write(f"**Churn Prediction:** {'Yes' if churn_label else 'No'}")
+
+    except Exception as e:
+        st.error("Prediction failed. Please ensure the API is running.")
+        st.exception(e)
