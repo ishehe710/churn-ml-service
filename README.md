@@ -10,108 +10,150 @@ The goal is not only to develop accurate predictive models but also to translate
 
 ---
 
+## System Architecture
+
+A detailed breakdown of the system design, module responsibilities, and data flow can be found in:
+
+➡️ **[architecture.md](./docs/architecture.md)**
+
+---
+
 ## API & SQL Design
 
 ### API
 
-- Implemented using **FastAPI**.
-- Connects the customer churn prediction model to a web application.
-- **POST** request endpoint: `/predict`  
-- **Input:** JSON containing model-ready feature values.  
-  Example:
+- Implemented using **FastAPI**
+- Exposes a machine learning model through a REST interface
+- **POST** endpoint: `/predict`
+- Accepts model-ready features and returns churn risk
+
+**Example Request**
 ```json
 {
-    "TotalCharges": 29.85,
-    "Month-to-Month (Contract)": 1,
-    "tenure": 1,
-    "SeniorCitizen": 0,
-    "Two year (Contract)": 0
+  "TotalCharges": 29.85,
+  "Month-to-Month (Contract)": 1,
+  "tenure": 1,
+  "SeniorCitizen": 0,
+  "Two year (Contract)": 0,
+  ...
 }
 ```
-- **Output:** JSON containing predicted churn probability and label.  
-  Example:
+
+**Example Response**
 ```json
 {
-    "churn_probability": 0.82,
-    "churn_prediction": "High Risk"
+  "churn_label": 1, 
+  "probability": 0.452534225,
+  "model_version": "LogisticRegression"
 }
 ```
+
+---
 
 ### Model Packaging
 
-- The best trained model is saved using **Joblib** for fast loading during inference.
-- Ensures preprocessing consistency between training and inference.
-- Model is saved once and loaded for predictions.
+- Final model is serialized using **Joblib**
+- Model is loaded once at API startup (no retraining during inference)
+- Ensures consistent preprocessing between training and inference
+
+---
 
 ### SQL Design
 
-- **Database Choice:** SQLite (lightweight, serverless)
+- **Database:** SQLite (lightweight, serverless, ideal for prototyping)
 - **Tables:**
-  - `customers`: Stores customer ID and all feature values.
-  - `predictions`: Stores customer ID, churn prediction, probability, and timestamp.
-- **Example SQL Queries:**
-  - High-Risk Customers:
+  - `predictions`: Churn probability, prediction label, timestamp, model version
+
+**Example Queries**
 ```sql
 SELECT customer_id, churn_probability
 FROM predictions
 WHERE churn_prediction = 1
 ORDER BY churn_probability DESC;
 ```
-  - Daily Prediction Count:
+
 ```sql
 SELECT DATE(timestamp), COUNT(*)
 FROM predictions
 GROUP BY DATE(timestamp);
 ```
 
-### End-to-End System Flow
+---
 
-- **Frontend → API:** User submits customer data via POST request.  
-- **API → Model:** API loads the saved model (no retraining).  
-- **Model → Predict:** Model predicts churn probability and label.  
-- **Predict → Response:** JSON response is returned to frontend.  
-- **Predict → DB:** Prediction data is saved in the database.  
-- **DB → Predictions / Customers:** Data is organized into `predictions` and `customers` tables.
+## End-to-End Flow
 
-### API Usage
+1. User submits customer data via API or GUI
+2. API loads the persisted model
+3. Model generates churn probability and risk label
+4. Prediction is returned to the client
+5. Customer data and predictions are stored in SQLite
 
-1. Clone the repository:
-   ```bash
-   git clone <repo_url>
-   cd churn-ml-service
-   ```
-2. Install dependencies:
-   ```bash
-   pip install -r requirements.txt
-   ```
-3. Run the API:
-   ```bash
-   cd api
-   fastapi dev main.py
-   ```
-4. Example Request:
-```json
-{
-    "TotalCharges": 29.85,
-    "Month-to-Month (Contract)": 1,
-    "tenure": 1,
-    "SeniorCitizen": 0,
-    "Two year (Contract)": 0,
-    ...
-}
+---
+
+## Running the Project
+
+### API
+
+```bash
+git clone <repo_url>
+cd churn-ml-service
+pip install -r requirements.txt
+python -m uvicorn src.api.main:app --reload
 ```
-5. Example Response:
-```json
-{
-    "churn_probability": 0.82,
-    "churn_prediction": "High Risk"
-}
+
+### GUI (Streamlit)
+
+The GUI provides a lightweight visual wrapper for testing model inference.
+
+```bash
+python -m streamlit run src/gui/app.py
 ```
 
 ---
 
-## Notes
+## Logging
 
-- This README is a living document and will be updated as the project progresses.
-- All ML models, API endpoints, and SQL designs are aligned to ensure reproducibility and ease of deployment.
+The system includes structured logging across:
+- API initialization
+- Model loading
+- Database initialization
+- Prediction events
 
+This ensures traceability and debuggability across the entire pipeline.
+
+---
+
+## Model Results
+
+| Model                                | Accuracy | Recall (Churn) | Precision (Churn) | F1-score (Churn) | Notes |
+|-------------------------------------|----------|----------------|-------------------|------------------|-------|
+| Logistic Regression (Baseline)      | 0.79     | 0.51           | 0.62              | 0.56             | Baseline |
+| Logistic Regression (Class Weights) | 0.74     | 0.79           | 0.50              | 0.62             | **Selected model** |
+| Random Forest Classifier            | 0.78     | 0.45           | 0.61              | 0.52             | Lower recall |
+
+### Model Selection Rationale
+
+The **Logistic Regression model with class weighting** was selected despite a small drop in overall accuracy. The primary business objective is identifying at-risk customers, making **recall and F1-score for the churn class** more important than raw accuracy.
+
+This model provides:
+- Stronger detection of churned customers
+- Better alignment with retention-focused use cases
+- Simpler interpretability for stakeholders
+
+---
+
+## Future Improvements
+
+1. Advanced model experiments (cross-validation, hyperparameter tuning)
+2. Neural networks using PyTorch
+3. Migration from SQLite to PostgreSQL for production scaling
+4. Expansion into CLV and multi-task prediction
+5. More robust frontend (React or enhanced Streamlit)
+
+---
+
+## Project Status
+
+✅ Complete and production-structured  
+🧹 Polished for portfolio presentation  
+🚀 Ready for extension into larger ML systems

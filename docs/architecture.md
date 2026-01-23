@@ -157,7 +157,8 @@ Structured JSON logs (example for successful prediction):
     "num_samples": 1, 
     "event": "prediction_completed", 
     "level": "info", 
-    "timestamp": "2026-01-21T20:26:51.462776"}
+    "timestamp": "2026-01-21T20:26:51.462776"
+}
 ```
 
 ---
