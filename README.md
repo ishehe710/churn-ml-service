@@ -111,6 +111,31 @@ python -m streamlit run src/gui/app.py
 
 ---
 
+## Demo & Screenshots
+
+### Streamlit GUI
+
+The following screenshots demonstrate the end-to-end churn prediction workflow.
+
+**Application Home**
+![GUI Home](assets/screenshots/gui_home.png)
+
+**Filled Customer Input Form**
+![GUI Form](assets/screenshots/gui_filled_form.png)
+
+**Churn Prediction Result**
+![GUI Prediction](assets/screenshots/gui_prediction.png)
+
+### API
+
+**FastAPI Interactive Documentation**
+![API Docs](assets/screenshots/api_docs.png)
+
+**Sample Prediction Response**
+![API Response](assets/screenshots/api_response.png)
+
+---
+
 ## Logging
 
 The system includes structured logging across:
